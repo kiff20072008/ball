@@ -41,13 +41,7 @@ void ball::keyPressEvent(QKeyEvent* pe)
     }
         break;
     }
-   if(pe->isAutoRepeat())
-   {
-       if(mBallSpeed<10)
-           mBallSpeed+=2;
-   }
-   else
-       mBallSpeed=1;
+       mBallSpeed=SPEED_OF_BALL;
 
 
 }
@@ -62,7 +56,11 @@ void ball::start()
     setSceneRect(0,0,500,700);
     setBackgroundBrush(QPixmap(".//img/fon.png"));
     plifeItem->setVisible(false);
+
     restart_full();
+    player.setMedia(QUrl::fromLocalFile(".//img/1.mp3"));
+   // player.play();
+
 
 }
 
@@ -82,7 +80,15 @@ void ball::move_blocks()
         {
             p_arr.at(i)->setPos(p_arr.at(i)->x(),p_arr.at(i)->y()-1);
             if(pBallItem->collidesWithItem(p_arr.at(i)))
+            {
+                if(pBallItem->x()+pBallItem->pixmap().width()/2>p_arr.at(i)->x()+p_arr.at(i)->pixmap().width())
+                    if(pBallItem->x()+pBallItem->pixmap().width()<width())
+                        pBallItem->setPos(pBallItem->x()+1,pBallItem->y());
+                if(pBallItem->x()+pBallItem->pixmap().width()/2<p_arr.at(i)->x())
+                    if(pBallItem->x()>0)
+                         pBallItem->setPos(pBallItem->x()-1,pBallItem->y());
                 pBallItem->setPos(pBallItem->x(),pBallItem->y()-1);
+            }
             if(p_arr.at(i)->y()<0)
             {
                 p_arr.at(i)->setPos(600,50);
@@ -124,6 +130,12 @@ void ball::move_blocks()
     {
         mScore++;
         emit ScoreIsChanged(mScore);
+        if(!mScore%10)
+        {
+            if(mPrepSpeed>=4)
+               mPrepSpeed-=2;
+            mBlocksTimer->setInterval(mPrepSpeed);
+        }
         mPrepLastCoordY=the_lowest_prep()+150;
         generate_prep();
         temp=0;
@@ -154,6 +166,7 @@ int ball::the_lowest_prep()
 
 void ball::game_over()
 {
+    player.stop();
     mBlocksTimer->stop();
     mBallTimer->stop();
     int n = QMessageBox::warning(0,
@@ -184,7 +197,7 @@ void ball::restart()
         pBallItem->setPos(250,100-temp);
     }
 
-    mBallSpeed=1;
+    mBallSpeed=SPEED_OF_BALL;
     mBallSpeedFall=1;
 
 
@@ -194,8 +207,9 @@ void ball::restart_full()
 {
     mLifesCounter=3;
     mScore=0;
-    mBallSpeed=1;
+    mBallSpeed=SPEED_OF_BALL;
     mBallSpeedFall=1;
+    mPrepSpeed=20;
     pBallItem->setPos(250,100);
     emit ScoreIsChanged(mScore);
     for( int i=0;i<(signed)p_arr_of_lifes.size();++i)
@@ -216,8 +230,11 @@ void ball::restart_full()
     for(int i=0;i<(signed)p_arr.size();++i)
         p_arr.at(i)->setPos(100,800);
     initiate_prep();
-    mBlocksTimer->start(30);
+    mBlocksTimer->start(mPrepSpeed);
     mBallTimer->start(50);
+
+
+
 
 }
 
@@ -228,6 +245,8 @@ void ball::restart_signal()
 
 void ball::move_ball()
 {
+    static int temp=0;
+    temp++;
     if(ball_collide_with())
         return;
 
@@ -239,7 +258,8 @@ void ball::move_ball()
             mBallSpeedFall=1;
             return;
         }
-    mBallSpeedFall++;
+    if(!temp%2 && mBallSpeedFall<15)
+       mBallSpeedFall++;
 
    if(pBallItem->y()+pBallItem->pixmap().height()>height())
    {

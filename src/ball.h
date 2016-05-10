@@ -1,12 +1,13 @@
 #pragma once
 #include <QtWidgets>
 #include <vector>
-# include <QGraphicsScene>
-
+#include <QGraphicsScene>
+#include <QMediaPlayer>
 
 #define SIZE_OF_LIFES 3
 #define SIZE_OF_PREP 14
 #define SIZE_OF_PREP_WITH_SHIPI 4
+#define SPEED_OF_BALL 30
 
 
 class ball : public QGraphicsScene
@@ -27,6 +28,7 @@ private:
     void game_over();
 
    QQueue<int> mStack;   //stack not usable platforms
+   QMediaPlayer player;
    QQueue<int> mStackWithShip;
    QGraphicsPixmapItem* pBallItem; // ptr to ball img
    QGraphicsPixmapItem* plifeItem; // ptr to life img
@@ -35,6 +37,7 @@ private:
    QVector <QGraphicsPixmapItem*> p_arr_of_lifes; // arr of lifes img
    int mBallSpeed; // horizontal speed of ball
    int mBallSpeedFall; // down speed of ball
+   int mPrepSpeed;
    int mScore; // score
    int mPrepLastCoordY;
    QTimer* mBlocksTimer; // timer of blocks up
